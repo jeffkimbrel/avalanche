@@ -1,49 +1,30 @@
 #!/usr/bin/env python3
 
+import argparse
 import json
-import operator
 import sys
 from functools import reduce
 from operator import add
 
-description = [
-	'    This tool takes in a list of debts (see DEBT) and uses the',
-	'    avalanche philosophy of debt management to pay off debts. Each time',
-	'    a debt is paid off, its payment amount (along with any EXTRA) will be',
-	'    put towards the next highest paying debt.'
-]
-usageopts = [
-	'    {:s} DEBT [EXTRA]'
-]
-usageargs = [
-	'    DEBT',
-	'        The file detailing debts in a JSON array format. Each element in the',
-	'        array must have a debt name `name`, debt amount `amount`, interest rate',
-	'        `rate`, and a minimum payment `payment`.',
-	'    EXTRA',
-	'        The extra amount to be paid each month, which will be allocated to the next highest debt.'
-]
+parser = argparse.ArgumentParser(description="""
+This tool takes in a list of debts (see DEBT) and uses the avalanche 
+philosophy of debt management to pay off debts. Each time a debt is 
+paid off, its payment amount (along with any EXTRA) will be put towards 
+the next highest paying debt.""", formatter_class=argparse.RawTextHelpFormatter)
 
-def help(progname):
-	print('NAME')
-	print('    {:s}'.format(progname))
-	print()
-	
-	print('DESCRIPTION')
-	for line in description:
-		print(line)
-	print()
+parser.add_argument('-d', '--debt',
+                    help="""
+The file detailing debts in a JSON array format. Each element in the 
+array must have a debt name `name`, debt amount `amount`, interest 
+rate `rate`, and a minimum payment `payment`.""", required=True)
 
-	print('USAGE')
-	for line in usageopts:
-		print(line.format(progname))
-	print()
+parser.add_argument('-e', '--extra',
+                    help="The extra amount to be paid each month, which will be allocated to the next highest debt.",
+                    required=False,
+                    default=0,
+					type = float)
 
-	print('PARAMETERS')
-	for line in usageargs:
-		print(line)
-	print()
-
+args = parser.parse_args()
 
 def print_table(debts, extra_payments):
 	zero_balance = False
@@ -129,21 +110,5 @@ def load_debts(file_name):
 	return debts
 
 if __name__ == '__main__':
-	progname = sys.argv[0]
-	argc = len(sys.argv)
-	file_name = ''
-	extra_payments = 0.0
-
-	if argc >= 4:
-		help(progname)
-		sys.exit(1)
-	if argc >= 3:
-		extra_payments = float(sys.argv[2])
-	if argc >= 2:
-		file_name = sys.argv[1]
-	if argc == 1:
-		help(progname)
-		sys.exit(1)
-
-	debts = load_debts(file_name)
-	print_table(debts, extra_payments)
+	debts = load_debts(args.debt)
+	print_table(debts, args.extra)
